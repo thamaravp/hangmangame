@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -30,10 +32,9 @@ import kotlin.random.Random
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Enable edge-to-edge display
         enableEdgeToEdge()
         setContent {
-            HangmanGameTheme {
+            ModernHangmanTheme {
                 HangmanGame()
             }
         }
@@ -41,18 +42,21 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HangmanGameTheme(content: @Composable () -> Unit) {
+fun ModernHangmanTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = lightColorScheme(
-            primary = Color(0xFF6200EA),
-            secondary = Color(0xFF03DAC6),
-            tertiary = Color(0xFFFF6B35),
-            background = Color(0xFFF8F9FA),
+            primary = Color(0xFF6366F1), // Indigo
+            secondary = Color(0xFF06B6D4), // Cyan
+            tertiary = Color(0xFF8B5CF6), // Purple
+            background = Color(0xFFF8FAFC), // Slate 50
             surface = Color.White,
+            surfaceVariant = Color(0xFFF1F5F9), // Slate 100
             onPrimary = Color.White,
-            onSecondary = Color.Black,
-            onBackground = Color(0xFF1C1B1F),
-            onSurface = Color(0xFF1C1B1F)
+            onSecondary = Color.White,
+            onBackground = Color(0xFF0F172A), // Slate 900
+            onSurface = Color(0xFF1E293B), // Slate 800
+            error = Color(0xFFEF4444), // Red 500
+            onError = Color.White
         ),
         content = content
     )
@@ -95,54 +99,58 @@ fun HangmanGame() {
         }
     }
 
-    // UI Layout with proper system UI padding
+    // Modern gradient background
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF667eea),
-                        Color(0xFF764ba2)
+                        Color(0xFF6366F1).copy(alpha = 0.1f),
+                        Color(0xFF8B5CF6).copy(alpha = 0.05f),
+                        Color(0xFFF8FAFC)
                     )
                 )
             )
-            // Apply system UI padding to avoid notch/status bar overlap
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             // Header Section
-            GameHeader()
+            ModernGameHeader()
 
             // Game Content
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Hangman Drawing Card
-                HangmanDrawingCard(wrongGuesses = wrongGuesses)
+                ModernHangmanDrawingCard(wrongGuesses = wrongGuesses)
 
                 // Progress Indicator
-                GameProgressIndicator(
+                ModernGameProgressIndicator(
                     wrongGuesses = wrongGuesses,
                     maxWrongGuesses = maxWrongGuesses
                 )
 
                 // Word Display
-                WordDisplayCard(
+                ModernWordDisplayCard(
                     currentWord = currentWord,
                     guessedLetters = guessedLetters
                 )
 
                 // Game Status
-                if (gameOver) {
-                    GameStatusCard(
+                AnimatedVisibility(
+                    visible = gameOver,
+                    enter = slideInVertically() + fadeIn(),
+                    exit = slideOutVertically() + fadeOut()
+                ) {
+                    ModernGameStatusCard(
                         gameWon = gameWon,
                         currentWord = currentWord
                     )
@@ -152,10 +160,10 @@ fun HangmanGame() {
             // Bottom Section
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(20.dp)
             ) {
                 // Alphabet Grid
-                AlphabetGrid(
+                ModernAlphabetGrid(
                     guessedLetters = guessedLetters,
                     currentWord = currentWord,
                     gameOver = gameOver,
@@ -163,170 +171,242 @@ fun HangmanGame() {
                 )
 
                 // New Game Button
-                NewGameButton(onClick = { resetGame() })
+                ModernNewGameButton(onClick = { resetGame() })
             }
         }
     }
 }
 
 @Composable
-fun GameHeader() {
+fun ModernGameHeader() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
+            .shadow(
+                elevation = 16.dp,
+                shape = RoundedCornerShape(24.dp),
+                ambientColor = Color(0xFF6366F1).copy(alpha = 0.1f),
+                spotColor = Color(0xFF6366F1).copy(alpha = 0.1f)
+            ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.9f)
+            containerColor = Color.White
         ),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(24.dp)
     ) {
-        Text(
-            text = "🎯 HANGMAN GAME 🎯",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF6200EA),
-            textAlign = TextAlign.Center,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
-        )
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color(0xFF6366F1).copy(alpha = 0.05f),
+                            Color(0xFF8B5CF6).copy(alpha = 0.05f)
+                        )
+                    )
+                )
+        ) {
+            Text(
+                text = "🎯 HANGMAN",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF6366F1),
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp)
+            )
+        }
     }
 }
 
 @Composable
-fun HangmanDrawingCard(wrongGuesses: Int) {
+fun ModernHangmanDrawingCard(wrongGuesses: Int) {
     Card(
         modifier = Modifier
-            .size(220.dp)
-            .shadow(12.dp, RoundedCornerShape(20.dp)),
+            .size(240.dp)
+            .shadow(
+                elevation = 20.dp,
+                shape = RoundedCornerShape(32.dp),
+                ambientColor = Color(0xFF6366F1).copy(alpha = 0.1f),
+                spotColor = Color(0xFF6366F1).copy(alpha = 0.1f)
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(32.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            Color(0xFFF8FAFC),
+                            Color(0xFFF1F5F9)
+                        )
+                    )
+                )
+        ) {
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(20.dp)
+            ) {
+                drawModernHangman(wrongGuesses)
+            }
+        }
+    }
+}
+
+@Composable
+fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            drawColorfulHangman(wrongGuesses)
-        }
-    }
-}
-
-@Composable
-fun GameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(12.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = when {
-                wrongGuesses <= 2 -> Color(0xFF4CAF50).copy(alpha = 0.1f)
-                wrongGuesses <= 4 -> Color(0xFFFF9800).copy(alpha = 0.1f)
-                else -> Color(0xFFF44336).copy(alpha = 0.1f)
-            }
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "Wrong Guesses: $wrongGuesses / $maxWrongGuesses",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = when {
-                    wrongGuesses <= 2 -> Color(0xFF4CAF50)
-                    wrongGuesses <= 4 -> Color(0xFFFF9800)
-                    else -> Color(0xFFF44336)
-                }
-            )
-            LinearProgressIndicator(
-                progress = wrongGuesses.toFloat() / maxWrongGuesses,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp)
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp)),
-                color = when {
-                    wrongGuesses <= 2 -> Color(0xFF4CAF50)
-                    wrongGuesses <= 4 -> Color(0xFFFF9800)
-                    else -> Color(0xFFF44336)
-                },
-                trackColor = Color.Gray.copy(alpha = 0.3f)
-            )
-        }
-    }
-}
-
-@Composable
-fun WordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(6.dp, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Text(
-            text = currentWord.map { letter ->
-                if (letter in guessedLetters) letter else '_'
-            }.joinToString("  "),
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            color = Color(0xFF6200EA),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp)
-        )
-    }
-}
-
-@Composable
-fun GameStatusCard(gameWon: Boolean, currentWord: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(16.dp)),
-        colors = CardDefaults.cardColors(
-            containerColor = if (gameWon)
-                Color(0xFF4CAF50).copy(alpha = 0.1f)
-            else
-                Color(0xFFF44336).copy(alpha = 0.1f)
-        ),
-        shape = RoundedCornerShape(16.dp)
-    ) {
         Column(
             modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = if (gameWon) "🎉 CONGRATULATIONS! 🎉" else "💀 GAME OVER 💀",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (gameWon) Color(0xFF4CAF50) else Color(0xFFF44336),
-                textAlign = TextAlign.Center
-            )
-            if (!gameWon) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "The word was: $currentWord",
-                    fontSize = 18.sp,
+                    text = "Wrong Guesses",
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF666666),
-                    modifier = Modifier.padding(top = 8.dp)
+                    color = Color(0xFF64748B)
                 )
+                Text(
+                    text = "$wrongGuesses / $maxWrongGuesses",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = when {
+                        wrongGuesses <= 2 -> Color(0xFF10B981)
+                        wrongGuesses <= 4 -> Color(0xFFF59E0B)
+                        else -> Color(0xFFEF4444)
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LinearProgressIndicator(
+                progress = { wrongGuesses.toFloat() / maxWrongGuesses },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp)),
+                color = when {
+                    wrongGuesses <= 2 -> Color(0xFF10B981)
+                    wrongGuesses <= 4 -> Color(0xFFF59E0B)
+                    else -> Color(0xFFEF4444)
+                },
+                trackColor = Color(0xFFE2E8F0)
+            )
+        }
+    }
+}
+
+@Composable
+fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(12.dp, RoundedCornerShape(24.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF6366F1).copy(alpha = 0.03f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        ) {
+            Text(
+                text = currentWord.map { letter ->
+                    if (letter in guessedLetters) letter else '_'
+                }.joinToString("  "),
+                fontSize = 36.sp,
+                fontWeight = FontWeight.ExtraBold,
+                textAlign = TextAlign.Center,
+                color = Color(0xFF6366F1),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(16.dp, RoundedCornerShape(24.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(24.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = if (gameWon) listOf(
+                            Color(0xFF10B981).copy(alpha = 0.1f),
+                            Color(0xFF10B981).copy(alpha = 0.05f)
+                        ) else listOf(
+                            Color(0xFFEF4444).copy(alpha = 0.1f),
+                            Color(0xFFEF4444).copy(alpha = 0.05f)
+                        )
+                    )
+                )
+        ) {
+            Column(
+                modifier = Modifier.padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = if (gameWon) "🎉 VICTORY! 🎉" else "💀 GAME OVER 💀",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (gameWon) Color(0xFF10B981) else Color(0xFFEF4444),
+                    textAlign = TextAlign.Center
+                )
+                if (!gameWon) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "The word was: $currentWord",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF64748B)
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-fun AlphabetGrid(
+fun ModernAlphabetGrid(
     guessedLetters: Set<Char>,
     currentWord: String,
     gameOver: Boolean,
@@ -334,31 +414,35 @@ fun AlphabetGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(6),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
-        modifier = Modifier.height(200.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.height(220.dp)
     ) {
         items(('A'..'Z').toList()) { letter ->
             val isGuessed = letter in guessedLetters
             val isCorrect = letter in currentWord
+
             Button(
                 onClick = { onLetterClick(letter) },
                 enabled = !isGuessed && !gameOver,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = when {
-                        !isGuessed -> Color(0xFF6200EA)
-                        isCorrect -> Color(0xFF4CAF50)
-                        else -> Color(0xFFF44336)
+                        !isGuessed -> Color(0xFF6366F1)
+                        isCorrect -> Color(0xFF10B981)
+                        else -> Color(0xFFEF4444)
                     },
                     disabledContainerColor = when {
-                        isCorrect -> Color(0xFF4CAF50).copy(alpha = 0.7f)
-                        isGuessed -> Color(0xFFF44336).copy(alpha = 0.7f)
-                        else -> Color(0xFF6200EA).copy(alpha = 0.5f)
+                        isCorrect -> Color(0xFF10B981).copy(alpha = 0.8f)
+                        isGuessed -> Color(0xFFEF4444).copy(alpha = 0.8f)
+                        else -> Color(0xFF94A3B8)
                     }
                 ),
                 modifier = Modifier
                     .aspectRatio(1f)
-                    .shadow(4.dp, CircleShape),
+                    .shadow(
+                        elevation = if (!isGuessed && !gameOver) 6.dp else 2.dp,
+                        shape = CircleShape
+                    ),
                 shape = CircleShape
             ) {
                 Text(
@@ -373,31 +457,32 @@ fun AlphabetGrid(
 }
 
 @Composable
-fun NewGameButton(onClick: () -> Unit) {
+fun ModernNewGameButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(56.dp)
-            .shadow(8.dp, RoundedCornerShape(28.dp)),
+            .height(64.dp)
+            .shadow(12.dp, RoundedCornerShape(32.dp)),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF03DAC6)
+            containerColor = Color(0xFF06B6D4)
         ),
-        shape = RoundedCornerShape(28.dp)
+        shape = RoundedCornerShape(32.dp)
     ) {
         Text(
-            text = "🎮 NEW GAME 🎮",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
+            text = "🎮 NEW GAME",
+            fontSize = 20.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White
         )
     }
 }
 
-fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
-    val strokeWidth = 6.dp.toPx()
-    // Gallows (Brown color)
-    val gallowsColor = Color(0xFF8D6E63)
+fun DrawScope.drawModernHangman(wrongGuesses: Int) {
+    val strokeWidth = 8.dp.toPx()
+
+    // Modern gallows with gradient effect
+    val gallowsColor = Color(0xFF64748B)
 
     // Base
     if (wrongGuesses >= 1) {
@@ -435,7 +520,7 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
     // Noose
     if (wrongGuesses >= 4) {
         drawLine(
-            color = Color(0xFF795548),
+            color = Color(0xFF475569),
             start = Offset(140.dp.toPx(), 30.dp.toPx()),
             end = Offset(140.dp.toPx(), 55.dp.toPx()),
             strokeWidth = strokeWidth - 2.dp.toPx(),
@@ -443,83 +528,85 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
         )
     }
 
-    // Hangman figure (Colorful)
-    val figureColor = Color(0xFF2196F3)
+    // Modern hangman figure
+    val figureStroke = 6.dp.toPx()
 
-    // Head
+    // Head with modern styling
     if (wrongGuesses >= 5) {
+        // Head outline
         drawCircle(
-            color = Color(0xFFFFDBCB), // Skin color
-            radius = 12.dp.toPx(),
-            center = Offset(140.dp.toPx(), 70.dp.toPx())
-        )
-        drawCircle(
-            color = figureColor,
-            radius = 12.dp.toPx(),
+            color = Color(0xFF6366F1),
+            radius = 15.dp.toPx(),
             center = Offset(140.dp.toPx(), 70.dp.toPx()),
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx())
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = figureStroke)
         )
+
         // Eyes
         drawCircle(
-            color = Color.Black,
-            radius = 2.dp.toPx(),
-            center = Offset(136.dp.toPx(), 67.dp.toPx())
+            color = Color(0xFF6366F1),
+            radius = 3.dp.toPx(),
+            center = Offset(135.dp.toPx(), 67.dp.toPx())
         )
         drawCircle(
-            color = Color.Black,
-            radius = 2.dp.toPx(),
-            center = Offset(144.dp.toPx(), 67.dp.toPx())
+            color = Color(0xFF6366F1),
+            radius = 3.dp.toPx(),
+            center = Offset(145.dp.toPx(), 67.dp.toPx())
         )
-        // Mouth (sad face)
+
+        // Sad mouth
         drawLine(
-            color = Color.Red,
-            start = Offset(136.dp.toPx(), 75.dp.toPx()),
-            end = Offset(144.dp.toPx(), 75.dp.toPx()),
-            strokeWidth = 2.dp.toPx(),
+            color = Color(0xFFEF4444),
+            start = Offset(135.dp.toPx(), 76.dp.toPx()),
+            end = Offset(145.dp.toPx(), 76.dp.toPx()),
+            strokeWidth = 3.dp.toPx(),
             cap = StrokeCap.Round
         )
     }
 
-    // Body and limbs
+    // Body and limbs with modern colors
     if (wrongGuesses >= 6) {
         // Body
         drawLine(
-            color = figureColor,
-            start = Offset(140.dp.toPx(), 82.dp.toPx()),
-            end = Offset(140.dp.toPx(), 130.dp.toPx()),
-            strokeWidth = strokeWidth,
+            color = Color(0xFF6366F1),
+            start = Offset(140.dp.toPx(), 85.dp.toPx()),
+            end = Offset(140.dp.toPx(), 135.dp.toPx()),
+            strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
+
         // Left arm
         drawLine(
-            color = Color(0xFFFF5722),
-            start = Offset(140.dp.toPx(), 100.dp.toPx()),
-            end = Offset(120.dp.toPx(), 115.dp.toPx()),
-            strokeWidth = strokeWidth - 1.dp.toPx(),
+            color = Color(0xFF8B5CF6),
+            start = Offset(140.dp.toPx(), 105.dp.toPx()),
+            end = Offset(120.dp.toPx(), 120.dp.toPx()),
+            strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
+
         // Right arm
         drawLine(
-            color = Color(0xFFFF5722),
-            start = Offset(140.dp.toPx(), 100.dp.toPx()),
-            end = Offset(160.dp.toPx(), 115.dp.toPx()),
-            strokeWidth = strokeWidth - 1.dp.toPx(),
+            color = Color(0xFF8B5CF6),
+            start = Offset(140.dp.toPx(), 105.dp.toPx()),
+            end = Offset(160.dp.toPx(), 120.dp.toPx()),
+            strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
+
         // Left leg
         drawLine(
-            color = Color(0xFF4CAF50),
-            start = Offset(140.dp.toPx(), 130.dp.toPx()),
-            end = Offset(125.dp.toPx(), 150.dp.toPx()),
-            strokeWidth = strokeWidth - 1.dp.toPx(),
+            color = Color(0xFF06B6D4),
+            start = Offset(140.dp.toPx(), 135.dp.toPx()),
+            end = Offset(125.dp.toPx(), 155.dp.toPx()),
+            strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
+
         // Right leg
         drawLine(
-            color = Color(0xFF4CAF50),
-            start = Offset(140.dp.toPx(), 130.dp.toPx()),
-            end = Offset(155.dp.toPx(), 150.dp.toPx()),
-            strokeWidth = strokeWidth - 1.dp.toPx(),
+            color = Color(0xFF06B6D4),
+            start = Offset(140.dp.toPx(), 135.dp.toPx()),
+            end = Offset(155.dp.toPx(), 155.dp.toPx()),
+            strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
     }
