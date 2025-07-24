@@ -3,6 +3,7 @@ package com.example.hangmangame
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,8 @@ import kotlin.random.Random
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Enable edge-to-edge display
+        enableEdgeToEdge()
         setContent {
             HangmanGameTheme {
                 HangmanGame()
@@ -92,7 +95,7 @@ fun HangmanGame() {
         }
     }
 
-    // UI Layout
+    // UI Layout with proper system UI padding
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -104,6 +107,8 @@ fun HangmanGame() {
                     )
                 )
             )
+            // Apply system UI padding to avoid notch/status bar overlap
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         Column(
             modifier = Modifier
@@ -238,7 +243,6 @@ fun GameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
                     else -> Color(0xFFF44336)
                 }
             )
-
             LinearProgressIndicator(
                 progress = wrongGuesses.toFloat() / maxWrongGuesses,
                 modifier = Modifier
@@ -308,7 +312,6 @@ fun GameStatusCard(gameWon: Boolean, currentWord: String) {
                 color = if (gameWon) Color(0xFF4CAF50) else Color(0xFFF44336),
                 textAlign = TextAlign.Center
             )
-
             if (!gameWon) {
                 Text(
                     text = "The word was: $currentWord",
@@ -338,7 +341,6 @@ fun AlphabetGrid(
         items(('A'..'Z').toList()) { letter ->
             val isGuessed = letter in guessedLetters
             val isCorrect = letter in currentWord
-
             Button(
                 onClick = { onLetterClick(letter) },
                 enabled = !isGuessed && !gameOver,
@@ -394,7 +396,6 @@ fun NewGameButton(onClick: () -> Unit) {
 
 fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
     val strokeWidth = 6.dp.toPx()
-
     // Gallows (Brown color)
     val gallowsColor = Color(0xFF8D6E63)
 
@@ -458,7 +459,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             center = Offset(140.dp.toPx(), 70.dp.toPx()),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = 3.dp.toPx())
         )
-
         // Eyes
         drawCircle(
             color = Color.Black,
@@ -470,7 +470,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             radius = 2.dp.toPx(),
             center = Offset(144.dp.toPx(), 67.dp.toPx())
         )
-
         // Mouth (sad face)
         drawLine(
             color = Color.Red,
@@ -491,7 +490,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             strokeWidth = strokeWidth,
             cap = StrokeCap.Round
         )
-
         // Left arm
         drawLine(
             color = Color(0xFFFF5722),
@@ -500,7 +498,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             strokeWidth = strokeWidth - 1.dp.toPx(),
             cap = StrokeCap.Round
         )
-
         // Right arm
         drawLine(
             color = Color(0xFFFF5722),
@@ -509,7 +506,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             strokeWidth = strokeWidth - 1.dp.toPx(),
             cap = StrokeCap.Round
         )
-
         // Left leg
         drawLine(
             color = Color(0xFF4CAF50),
@@ -518,7 +514,6 @@ fun DrawScope.drawColorfulHangman(wrongGuesses: Int) {
             strokeWidth = strokeWidth - 1.dp.toPx(),
             cap = StrokeCap.Round
         )
-
         // Right leg
         drawLine(
             color = Color(0xFF4CAF50),
