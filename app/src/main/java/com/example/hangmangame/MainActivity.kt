@@ -7,7 +7,9 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -25,6 +27,8 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -127,27 +131,38 @@ fun HangmanGame() {
         hintShown = true
     }
 
-    // Beautiful gradient background
+    // Background with image and overlay
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF667eea), // Beautiful blue
-                        Color(0xFF764ba2), // Purple
-                        Color(0xFFf093fb), // Light pink
-                        Color(0xFFf5576c), // Coral
-                        Color(0xFF4facfe), // Light blue
-                        Color(0xFF00f2fe)  // Cyan
-                    ),
-                    startY = 0f,
-                    endY = Float.POSITIVE_INFINITY
-                )
-            )
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
-        // Add scrollable column
+        // Background Image
+        // Replace R.drawable.game_background with your actual image resource
+        // If you don't have an image yet, comment out this Image composable
+        Image(
+            painter = painterResource(id = R.drawable.game_background), // Replace with your image
+            contentDescription = "Game Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
+
+        // Semi-transparent overlay for better text readability
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Black.copy(alpha = 0.3f),
+                            Color.Black.copy(alpha = 0.5f),
+                            Color.Black.copy(alpha = 0.3f)
+                        )
+                    )
+                )
+        )
+
+        // Game Content
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -194,7 +209,7 @@ fun HangmanGame() {
                 )
             }
 
-            // Alphabet Grid
+            // Alphabet Grid (Back again!)
             ModernAlphabetGrid(
                 guessedLetters = guessedLetters,
                 currentWord = currentWord,
@@ -216,40 +231,28 @@ fun ModernGameHeader() {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(24.dp))
             .shadow(
                 elevation = 16.dp,
                 shape = RoundedCornerShape(24.dp),
-                ambientColor = Color.White.copy(alpha = 0.3f),
-                spotColor = Color.White.copy(alpha = 0.3f)
+                ambientColor = Color.Black.copy(alpha = 0.5f),
+                spotColor = Color.Black.copy(alpha = 0.5f)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Box(
+        Text(
+            text = "🎯 HANGMAN",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = Color.White,
+            textAlign = TextAlign.Center,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF667eea).copy(alpha = 0.1f),
-                            Color(0xFF764ba2).copy(alpha = 0.1f)
-                        )
-                    )
-                )
-        ) {
-            Text(
-                text = "🎯 HANGMAN",
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF667eea),
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(28.dp)
-            )
-        }
+                .padding(28.dp)
+        )
     }
 }
 
@@ -258,36 +261,24 @@ fun ModernHangmanDrawingCard(wrongGuesses: Int) {
     Card(
         modifier = Modifier
             .size(220.dp)
+            .border(2.dp, Color.White, RoundedCornerShape(32.dp))
             .shadow(
                 elevation = 20.dp,
                 shape = RoundedCornerShape(32.dp),
-                ambientColor = Color.White.copy(alpha = 0.3f),
-                spotColor = Color.White.copy(alpha = 0.3f)
+                ambientColor = Color.Black.copy(alpha = 0.5f),
+                spotColor = Color.Black.copy(alpha = 0.5f)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(32.dp)
     ) {
-        Box(
+        Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    brush = Brush.radialGradient(
-                        colors = listOf(
-                            Color.White.copy(alpha = 0.9f),
-                            Color(0xFFF8FAFC).copy(alpha = 0.8f)
-                        )
-                    )
-                )
+                .padding(20.dp)
         ) {
-            Canvas(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(20.dp)
-            ) {
-                drawModernHangman(wrongGuesses)
-            }
+            drawModernHangman(wrongGuesses)
         }
     }
 }
@@ -297,9 +288,10 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(20.dp))
             .shadow(8.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -317,7 +309,7 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
                     text = "Wrong Guesses",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF64748B)
+                    color = Color.White
                 )
                 Text(
                     text = "$wrongGuesses / $maxWrongGuesses",
@@ -342,7 +334,7 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
                     wrongGuesses <= 4 -> Color(0xFFF59E0B)
                     else -> Color(0xFFEF4444)
                 },
-                trackColor = Color(0xFFE2E8F0)
+                trackColor = Color.White.copy(alpha = 0.3f)
             )
         }
     }
@@ -353,37 +345,25 @@ fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(24.dp))
             .shadow(12.dp, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Box(
+        Text(
+            text = currentWord.map { letter ->
+                if (letter in guessedLetters) letter else '_'
+            }.joinToString("  "),
+            fontSize = 32.sp,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center,
+            color = Color.White,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFF667eea).copy(alpha = 0.05f),
-                            Color.Transparent
-                        )
-                    )
-                )
-        ) {
-            Text(
-                text = currentWord.map { letter ->
-                    if (letter in guessedLetters) letter else '_'
-                }.joinToString("  "),
-                fontSize = 32.sp,
-                fontWeight = FontWeight.ExtraBold,
-                textAlign = TextAlign.Center,
-                color = Color(0xFF667eea),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(28.dp)
-            )
-        }
+                .padding(28.dp)
+        )
     }
 }
 
@@ -397,9 +377,10 @@ fun ModernHintSection(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(20.dp))
             .shadow(10.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -417,7 +398,7 @@ fun ModernHintSection(
                     text = "💡 Hint",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF64748B)
+                    color = Color.White
                 )
 
                 Button(
@@ -445,8 +426,9 @@ fun ModernHintSection(
                 exit = slideOutVertically() + fadeOut()
             ) {
                 Card(
+                    modifier = Modifier.border(1.dp, Color.White, RoundedCornerShape(16.dp)),
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF59E0B).copy(alpha = 0.15f)
+                        containerColor = Color(0xFFF59E0B).copy(alpha = 0.3f)
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -454,7 +436,7 @@ fun ModernHintSection(
                         text = hint,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF92400E),
+                        color = Color.White,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -471,47 +453,32 @@ fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(24.dp))
             .shadow(16.dp, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = if (gameWon) listOf(
-                            Color(0xFF10B981).copy(alpha = 0.15f),
-                            Color(0xFF10B981).copy(alpha = 0.05f)
-                        ) else listOf(
-                            Color(0xFFEF4444).copy(alpha = 0.15f),
-                            Color(0xFFEF4444).copy(alpha = 0.05f)
-                        )
-                    )
-                )
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Text(
+                text = if (gameWon) "🎉 VICTORY! 🎉" else "💀 GAME OVER 💀",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = if (gameWon) Color(0xFF10B981) else Color(0xFFEF4444),
+                textAlign = TextAlign.Center
+            )
+            if (!gameWon) {
                 Text(
-                    text = if (gameWon) "🎉 VICTORY! 🎉" else "💀 GAME OVER 💀",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = if (gameWon) Color(0xFF10B981) else Color(0xFFEF4444),
-                    textAlign = TextAlign.Center
+                    text = "The word was: $currentWord",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
                 )
-                if (!gameWon) {
-                    Text(
-                        text = "The word was: $currentWord",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF64748B)
-                    )
-                }
             }
         }
     }
@@ -527,9 +494,10 @@ fun ModernAlphabetGrid(
     Card(
         modifier = Modifier
             .fillMaxWidth()
+            .border(2.dp, Color.White, RoundedCornerShape(20.dp))
             .shadow(8.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White.copy(alpha = 0.95f)
+            containerColor = Color.Black.copy(alpha = 0.4f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -586,6 +554,7 @@ fun ModernNewGameButton(onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
+            .border(2.dp, Color.White, RoundedCornerShape(30.dp))
             .shadow(12.dp, RoundedCornerShape(30.dp)),
         colors = ButtonDefaults.buttonColors(
             containerColor = Color(0xFF764ba2)
@@ -603,8 +572,8 @@ fun ModernNewGameButton(onClick: () -> Unit) {
 
 fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     val strokeWidth = 8.dp.toPx()
-    // Modern gallows with gradient effect
-    val gallowsColor = Color(0xFF64748B)
+    // Modern gallows with white color for visibility
+    val gallowsColor = Color.White
 
     // Base
     if (wrongGuesses >= 1) {
@@ -642,7 +611,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     // Noose
     if (wrongGuesses >= 4) {
         drawLine(
-            color = Color(0xFF475569),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 30.dp.toPx()),
             end = Offset(140.dp.toPx(), 55.dp.toPx()),
             strokeWidth = strokeWidth - 2.dp.toPx(),
@@ -657,19 +626,19 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     if (wrongGuesses >= 5) {
         // Head outline
         drawCircle(
-            color = Color(0xFF667eea),
+            color = Color.White,
             radius = 15.dp.toPx(),
             center = Offset(140.dp.toPx(), 70.dp.toPx()),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = figureStroke)
         )
         // Eyes
         drawCircle(
-            color = Color(0xFF667eea),
+            color = Color.White,
             radius = 3.dp.toPx(),
             center = Offset(135.dp.toPx(), 67.dp.toPx())
         )
         drawCircle(
-            color = Color(0xFF667eea),
+            color = Color.White,
             radius = 3.dp.toPx(),
             center = Offset(145.dp.toPx(), 67.dp.toPx())
         )
@@ -683,11 +652,11 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
     }
 
-    // Body and limbs with modern colors
+    // Body and limbs with white colors
     if (wrongGuesses >= 6) {
         // Body
         drawLine(
-            color = Color(0xFF667eea),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 85.dp.toPx()),
             end = Offset(140.dp.toPx(), 135.dp.toPx()),
             strokeWidth = figureStroke,
@@ -695,7 +664,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Left arm
         drawLine(
-            color = Color(0xFF764ba2),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 105.dp.toPx()),
             end = Offset(120.dp.toPx(), 120.dp.toPx()),
             strokeWidth = figureStroke,
@@ -703,7 +672,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Right arm
         drawLine(
-            color = Color(0xFF764ba2),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 105.dp.toPx()),
             end = Offset(160.dp.toPx(), 120.dp.toPx()),
             strokeWidth = figureStroke,
@@ -711,7 +680,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Left leg
         drawLine(
-            color = Color(0xFF4facfe),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 135.dp.toPx()),
             end = Offset(125.dp.toPx(), 155.dp.toPx()),
             strokeWidth = figureStroke,
@@ -719,7 +688,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Right leg
         drawLine(
-            color = Color(0xFF4facfe),
+            color = Color.White,
             start = Offset(140.dp.toPx(), 135.dp.toPx()),
             end = Offset(155.dp.toPx(), 155.dp.toPx()),
             strokeWidth = figureStroke,
