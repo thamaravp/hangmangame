@@ -65,18 +65,37 @@ fun ModernHangmanTheme(content: @Composable () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HangmanGame() {
-    // Game Data
-    val words = listOf(
-        "ANDROID", "KOTLIN", "COMPOSE", "MOBILE", "DEVELOPMENT",
-        "PROGRAMMING", "COMPUTER", "TECHNOLOGY", "SOFTWARE", "CODING",
-        "JETPACK", "GOOGLE", "STUDIO", "APPLICATION", "FRAMEWORK",
-        "DESIGN", "INTERFACE", "CREATIVE", "INNOVATION", "DIGITAL"
+    // Game Data with hints
+    val wordsWithHints = mapOf(
+        "ANDROID" to "Google's mobile operating system",
+        "KOTLIN" to "Modern programming language for Android",
+        "COMPOSE" to "Android's modern UI toolkit",
+        "MOBILE" to "Portable electronic device",
+        "DEVELOPMENT" to "Process of creating software",
+        "PROGRAMMING" to "Writing computer code",
+        "COMPUTER" to "Electronic device for processing data",
+        "TECHNOLOGY" to "Application of scientific knowledge",
+        "SOFTWARE" to "Computer programs and applications",
+        "CODING" to "Writing instructions for computers",
+        "JETPACK" to "Android development components",
+        "GOOGLE" to "Tech company that created Android",
+        "STUDIO" to "IDE for Android development",
+        "APPLICATION" to "Software program for users",
+        "FRAMEWORK" to "Structure for building software",
+        "DESIGN" to "Planning the appearance and function",
+        "INTERFACE" to "Point of interaction between systems",
+        "CREATIVE" to "Using imagination and original ideas",
+        "INNOVATION" to "Introduction of new ideas or methods",
+        "DIGITAL" to "Relating to computer technology"
     )
 
     // Game State
-    var currentWord by remember { mutableStateOf(words.random()) }
+    var currentWordEntry by remember { mutableStateOf(wordsWithHints.entries.random()) }
+    var currentWord by remember { mutableStateOf(currentWordEntry.key) }
+    var currentHint by remember { mutableStateOf(currentWordEntry.value) }
     var guessedLetters by remember { mutableStateOf(setOf<Char>()) }
     var wrongGuesses by remember { mutableStateOf(0) }
+    var hintShown by remember { mutableStateOf(false) }
     val maxWrongGuesses = 6
 
     // Game Logic
@@ -85,9 +104,12 @@ fun HangmanGame() {
     val gameOver = gameWon || gameLost
 
     fun resetGame() {
-        currentWord = words.random()
+        currentWordEntry = wordsWithHints.entries.random()
+        currentWord = currentWordEntry.key
+        currentHint = currentWordEntry.value
         guessedLetters = setOf()
         wrongGuesses = 0
+        hintShown = false
     }
 
     fun makeGuess(letter: Char) {
@@ -97,6 +119,10 @@ fun HangmanGame() {
                 wrongGuesses++
             }
         }
+    }
+
+    fun showHint() {
+        hintShown = true
     }
 
     // Modern gradient background
@@ -117,9 +143,9 @@ fun HangmanGame() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(20.dp),
+                .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             // Header Section
             ModernGameHeader()
@@ -127,7 +153,7 @@ fun HangmanGame() {
             // Game Content
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 // Hangman Drawing Card
                 ModernHangmanDrawingCard(wrongGuesses = wrongGuesses)
@@ -142,6 +168,14 @@ fun HangmanGame() {
                 ModernWordDisplayCard(
                     currentWord = currentWord,
                     guessedLetters = guessedLetters
+                )
+
+                // Hint Section
+                ModernHintSection(
+                    hint = currentHint,
+                    hintShown = hintShown,
+                    onShowHint = { showHint() },
+                    gameOver = gameOver
                 )
 
                 // Game Status
@@ -213,7 +247,7 @@ fun ModernGameHeader() {
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp)
+                    .padding(28.dp)
             )
         }
     }
@@ -270,8 +304,9 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -295,8 +330,6 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
                     }
                 )
             }
-
-            Spacer(modifier = Modifier.height(12.dp))
 
             LinearProgressIndicator(
                 progress = { wrongGuesses.toFloat() / maxWrongGuesses },
@@ -348,8 +381,87 @@ fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
                 color = Color(0xFF6366F1),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(28.dp)
+                    .padding(32.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun ModernHintSection(
+    hint: String,
+    hintShown: Boolean,
+    onShowHint: () -> Unit,
+    gameOver: Boolean
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(10.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        shape = RoundedCornerShape(20.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "💡 Hint",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF64748B)
+                )
+
+                Button(
+                    onClick = onShowHint,
+                    enabled = !hintShown && !gameOver,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFF59E0B),
+                        disabledContainerColor = Color(0xFF94A3B8)
+                    ),
+                    shape = CircleShape,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Text(
+                        text = "!",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    )
+                }
+            }
+
+            AnimatedVisibility(
+                visible = hintShown,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
+            ) {
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF59E0B).copy(alpha = 0.1f)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = hint,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF92400E),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+            }
         }
     }
 }
@@ -381,8 +493,9 @@ fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
                 )
         ) {
             Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                modifier = Modifier.padding(28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Text(
                     text = if (gameWon) "🎉 VICTORY! 🎉" else "💀 GAME OVER 💀",
@@ -392,7 +505,6 @@ fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
                     textAlign = TextAlign.Center
                 )
                 if (!gameWon) {
-                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "The word was: $currentWord",
                         fontSize = 18.sp,
@@ -414,14 +526,13 @@ fun ModernAlphabetGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(6),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.height(220.dp)
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.height(240.dp)
     ) {
         items(('A'..'Z').toList()) { letter ->
             val isGuessed = letter in guessedLetters
             val isCorrect = letter in currentWord
-
             Button(
                 onClick = { onLetterClick(letter) },
                 enabled = !isGuessed && !gameOver,
@@ -480,7 +591,6 @@ fun ModernNewGameButton(onClick: () -> Unit) {
 
 fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     val strokeWidth = 8.dp.toPx()
-
     // Modern gallows with gradient effect
     val gallowsColor = Color(0xFF64748B)
 
@@ -540,7 +650,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             center = Offset(140.dp.toPx(), 70.dp.toPx()),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = figureStroke)
         )
-
         // Eyes
         drawCircle(
             color = Color(0xFF6366F1),
@@ -552,7 +661,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             radius = 3.dp.toPx(),
             center = Offset(145.dp.toPx(), 67.dp.toPx())
         )
-
         // Sad mouth
         drawLine(
             color = Color(0xFFEF4444),
@@ -573,7 +681,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
-
         // Left arm
         drawLine(
             color = Color(0xFF8B5CF6),
@@ -582,7 +689,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
-
         // Right arm
         drawLine(
             color = Color(0xFF8B5CF6),
@@ -591,7 +697,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
-
         // Left leg
         drawLine(
             color = Color(0xFF06B6D4),
@@ -600,7 +705,6 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
             strokeWidth = figureStroke,
             cap = StrokeCap.Round
         )
-
         // Right leg
         drawLine(
             color = Color(0xFF06B6D4),
