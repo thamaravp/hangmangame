@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -125,88 +127,86 @@ fun HangmanGame() {
         hintShown = true
     }
 
-    // Modern gradient background
+    // Beautiful gradient background
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFF6366F1).copy(alpha = 0.1f),
-                        Color(0xFF8B5CF6).copy(alpha = 0.05f),
-                        Color(0xFFF8FAFC)
-                    )
+                        Color(0xFF667eea), // Beautiful blue
+                        Color(0xFF764ba2), // Purple
+                        Color(0xFFf093fb), // Light pink
+                        Color(0xFFf5576c), // Coral
+                        Color(0xFF4facfe), // Light blue
+                        Color(0xFF00f2fe)  // Cyan
+                    ),
+                    startY = 0f,
+                    endY = Float.POSITIVE_INFINITY
                 )
             )
             .windowInsetsPadding(WindowInsets.systemBars)
     ) {
+        // Add scrollable column
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             // Header Section
             ModernGameHeader()
 
-            // Game Content
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(24.dp)
+            // Hangman Drawing Card
+            ModernHangmanDrawingCard(wrongGuesses = wrongGuesses)
+
+            // Progress Indicator
+            ModernGameProgressIndicator(
+                wrongGuesses = wrongGuesses,
+                maxWrongGuesses = maxWrongGuesses
+            )
+
+            // Word Display
+            ModernWordDisplayCard(
+                currentWord = currentWord,
+                guessedLetters = guessedLetters
+            )
+
+            // Hint Section
+            ModernHintSection(
+                hint = currentHint,
+                hintShown = hintShown,
+                onShowHint = { showHint() },
+                gameOver = gameOver
+            )
+
+            // Game Status
+            AnimatedVisibility(
+                visible = gameOver,
+                enter = slideInVertically() + fadeIn(),
+                exit = slideOutVertically() + fadeOut()
             ) {
-                // Hangman Drawing Card
-                ModernHangmanDrawingCard(wrongGuesses = wrongGuesses)
-
-                // Progress Indicator
-                ModernGameProgressIndicator(
-                    wrongGuesses = wrongGuesses,
-                    maxWrongGuesses = maxWrongGuesses
+                ModernGameStatusCard(
+                    gameWon = gameWon,
+                    currentWord = currentWord
                 )
-
-                // Word Display
-                ModernWordDisplayCard(
-                    currentWord = currentWord,
-                    guessedLetters = guessedLetters
-                )
-
-                // Hint Section
-                ModernHintSection(
-                    hint = currentHint,
-                    hintShown = hintShown,
-                    onShowHint = { showHint() },
-                    gameOver = gameOver
-                )
-
-                // Game Status
-                AnimatedVisibility(
-                    visible = gameOver,
-                    enter = slideInVertically() + fadeIn(),
-                    exit = slideOutVertically() + fadeOut()
-                ) {
-                    ModernGameStatusCard(
-                        gameWon = gameWon,
-                        currentWord = currentWord
-                    )
-                }
             }
 
-            // Bottom Section
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(20.dp)
-            ) {
-                // Alphabet Grid
-                ModernAlphabetGrid(
-                    guessedLetters = guessedLetters,
-                    currentWord = currentWord,
-                    gameOver = gameOver,
-                    onLetterClick = { makeGuess(it) }
-                )
+            // Alphabet Grid
+            ModernAlphabetGrid(
+                guessedLetters = guessedLetters,
+                currentWord = currentWord,
+                gameOver = gameOver,
+                onLetterClick = { makeGuess(it) }
+            )
 
-                // New Game Button
-                ModernNewGameButton(onClick = { resetGame() })
-            }
+            // New Game Button
+            ModernNewGameButton(onClick = { resetGame() })
+
+            // Add some bottom padding to ensure scrolling works properly
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -219,11 +219,11 @@ fun ModernGameHeader() {
             .shadow(
                 elevation = 16.dp,
                 shape = RoundedCornerShape(24.dp),
-                ambientColor = Color(0xFF6366F1).copy(alpha = 0.1f),
-                spotColor = Color(0xFF6366F1).copy(alpha = 0.1f)
+                ambientColor = Color.White.copy(alpha = 0.3f),
+                spotColor = Color.White.copy(alpha = 0.3f)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -233,8 +233,8 @@ fun ModernGameHeader() {
                 .background(
                     brush = Brush.horizontalGradient(
                         colors = listOf(
-                            Color(0xFF6366F1).copy(alpha = 0.05f),
-                            Color(0xFF8B5CF6).copy(alpha = 0.05f)
+                            Color(0xFF667eea).copy(alpha = 0.1f),
+                            Color(0xFF764ba2).copy(alpha = 0.1f)
                         )
                     )
                 )
@@ -243,7 +243,7 @@ fun ModernGameHeader() {
                 text = "🎯 HANGMAN",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF6366F1),
+                color = Color(0xFF667eea),
                 textAlign = TextAlign.Center,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -257,15 +257,15 @@ fun ModernGameHeader() {
 fun ModernHangmanDrawingCard(wrongGuesses: Int) {
     Card(
         modifier = Modifier
-            .size(240.dp)
+            .size(220.dp)
             .shadow(
                 elevation = 20.dp,
                 shape = RoundedCornerShape(32.dp),
-                ambientColor = Color(0xFF6366F1).copy(alpha = 0.1f),
-                spotColor = Color(0xFF6366F1).copy(alpha = 0.1f)
+                ambientColor = Color.White.copy(alpha = 0.3f),
+                spotColor = Color.White.copy(alpha = 0.3f)
             ),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(32.dp)
     ) {
@@ -275,8 +275,8 @@ fun ModernHangmanDrawingCard(wrongGuesses: Int) {
                 .background(
                     brush = Brush.radialGradient(
                         colors = listOf(
-                            Color(0xFFF8FAFC),
-                            Color(0xFFF1F5F9)
+                            Color.White.copy(alpha = 0.9f),
+                            Color(0xFFF8FAFC).copy(alpha = 0.8f)
                         )
                     )
                 )
@@ -299,12 +299,12 @@ fun ModernGameProgressIndicator(wrongGuesses: Int, maxWrongGuesses: Int) {
             .fillMaxWidth()
             .shadow(8.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
         Column(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier.padding(20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
@@ -355,7 +355,7 @@ fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
             .fillMaxWidth()
             .shadow(12.dp, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -365,7 +365,7 @@ fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = listOf(
-                            Color(0xFF6366F1).copy(alpha = 0.03f),
+                            Color(0xFF667eea).copy(alpha = 0.05f),
                             Color.Transparent
                         )
                     )
@@ -375,13 +375,13 @@ fun ModernWordDisplayCard(currentWord: String, guessedLetters: Set<Char>) {
                 text = currentWord.map { letter ->
                     if (letter in guessedLetters) letter else '_'
                 }.joinToString("  "),
-                fontSize = 36.sp,
+                fontSize = 32.sp,
                 fontWeight = FontWeight.ExtraBold,
                 textAlign = TextAlign.Center,
-                color = Color(0xFF6366F1),
+                color = Color(0xFF667eea),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(32.dp)
+                    .padding(28.dp)
             )
         }
     }
@@ -399,7 +399,7 @@ fun ModernHintSection(
             .fillMaxWidth()
             .shadow(10.dp, RoundedCornerShape(20.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(20.dp)
     ) {
@@ -446,7 +446,7 @@ fun ModernHintSection(
             ) {
                 Card(
                     colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF59E0B).copy(alpha = 0.1f)
+                        containerColor = Color(0xFFF59E0B).copy(alpha = 0.15f)
                     ),
                     shape = RoundedCornerShape(16.dp)
                 ) {
@@ -473,7 +473,7 @@ fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
             .fillMaxWidth()
             .shadow(16.dp, RoundedCornerShape(24.dp)),
         colors = CardDefaults.cardColors(
-            containerColor = Color.White
+            containerColor = Color.White.copy(alpha = 0.95f)
         ),
         shape = RoundedCornerShape(24.dp)
     ) {
@@ -483,17 +483,17 @@ fun ModernGameStatusCard(gameWon: Boolean, currentWord: String) {
                 .background(
                     brush = Brush.verticalGradient(
                         colors = if (gameWon) listOf(
-                            Color(0xFF10B981).copy(alpha = 0.1f),
+                            Color(0xFF10B981).copy(alpha = 0.15f),
                             Color(0xFF10B981).copy(alpha = 0.05f)
                         ) else listOf(
-                            Color(0xFFEF4444).copy(alpha = 0.1f),
+                            Color(0xFFEF4444).copy(alpha = 0.15f),
                             Color(0xFFEF4444).copy(alpha = 0.05f)
                         )
                     )
                 )
         ) {
             Column(
-                modifier = Modifier.padding(28.dp),
+                modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -524,44 +524,56 @@ fun ModernAlphabetGrid(
     gameOver: Boolean,
     onLetterClick: (Char) -> Unit
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(6),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.height(240.dp)
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(8.dp, RoundedCornerShape(20.dp)),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White.copy(alpha = 0.95f)
+        ),
+        shape = RoundedCornerShape(20.dp)
     ) {
-        items(('A'..'Z').toList()) { letter ->
-            val isGuessed = letter in guessedLetters
-            val isCorrect = letter in currentWord
-            Button(
-                onClick = { onLetterClick(letter) },
-                enabled = !isGuessed && !gameOver,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = when {
-                        !isGuessed -> Color(0xFF6366F1)
-                        isCorrect -> Color(0xFF10B981)
-                        else -> Color(0xFFEF4444)
-                    },
-                    disabledContainerColor = when {
-                        isCorrect -> Color(0xFF10B981).copy(alpha = 0.8f)
-                        isGuessed -> Color(0xFFEF4444).copy(alpha = 0.8f)
-                        else -> Color(0xFF94A3B8)
-                    }
-                ),
-                modifier = Modifier
-                    .aspectRatio(1f)
-                    .shadow(
-                        elevation = if (!isGuessed && !gameOver) 6.dp else 2.dp,
-                        shape = CircleShape
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(6),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier
+                .height(200.dp)
+                .padding(16.dp)
+        ) {
+            items(('A'..'Z').toList()) { letter ->
+                val isGuessed = letter in guessedLetters
+                val isCorrect = letter in currentWord
+                Button(
+                    onClick = { onLetterClick(letter) },
+                    enabled = !isGuessed && !gameOver,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = when {
+                            !isGuessed -> Color(0xFF667eea)
+                            isCorrect -> Color(0xFF10B981)
+                            else -> Color(0xFFEF4444)
+                        },
+                        disabledContainerColor = when {
+                            isCorrect -> Color(0xFF10B981).copy(alpha = 0.8f)
+                            isGuessed -> Color(0xFFEF4444).copy(alpha = 0.8f)
+                            else -> Color(0xFF94A3B8)
+                        }
                     ),
-                shape = CircleShape
-            ) {
-                Text(
-                    text = letter.toString(),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                    modifier = Modifier
+                        .aspectRatio(1f)
+                        .shadow(
+                            elevation = if (!isGuessed && !gameOver) 4.dp else 2.dp,
+                            shape = CircleShape
+                        ),
+                    shape = CircleShape
+                ) {
+                    Text(
+                        text = letter.toString(),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                }
             }
         }
     }
@@ -573,12 +585,12 @@ fun ModernNewGameButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
-            .shadow(12.dp, RoundedCornerShape(32.dp)),
+            .height(60.dp)
+            .shadow(12.dp, RoundedCornerShape(30.dp)),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF06B6D4)
+            containerColor = Color(0xFF764ba2)
         ),
-        shape = RoundedCornerShape(32.dp)
+        shape = RoundedCornerShape(30.dp)
     ) {
         Text(
             text = "🎮 NEW GAME",
@@ -645,19 +657,19 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     if (wrongGuesses >= 5) {
         // Head outline
         drawCircle(
-            color = Color(0xFF6366F1),
+            color = Color(0xFF667eea),
             radius = 15.dp.toPx(),
             center = Offset(140.dp.toPx(), 70.dp.toPx()),
             style = androidx.compose.ui.graphics.drawscope.Stroke(width = figureStroke)
         )
         // Eyes
         drawCircle(
-            color = Color(0xFF6366F1),
+            color = Color(0xFF667eea),
             radius = 3.dp.toPx(),
             center = Offset(135.dp.toPx(), 67.dp.toPx())
         )
         drawCircle(
-            color = Color(0xFF6366F1),
+            color = Color(0xFF667eea),
             radius = 3.dp.toPx(),
             center = Offset(145.dp.toPx(), 67.dp.toPx())
         )
@@ -675,7 +687,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
     if (wrongGuesses >= 6) {
         // Body
         drawLine(
-            color = Color(0xFF6366F1),
+            color = Color(0xFF667eea),
             start = Offset(140.dp.toPx(), 85.dp.toPx()),
             end = Offset(140.dp.toPx(), 135.dp.toPx()),
             strokeWidth = figureStroke,
@@ -683,7 +695,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Left arm
         drawLine(
-            color = Color(0xFF8B5CF6),
+            color = Color(0xFF764ba2),
             start = Offset(140.dp.toPx(), 105.dp.toPx()),
             end = Offset(120.dp.toPx(), 120.dp.toPx()),
             strokeWidth = figureStroke,
@@ -691,7 +703,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Right arm
         drawLine(
-            color = Color(0xFF8B5CF6),
+            color = Color(0xFF764ba2),
             start = Offset(140.dp.toPx(), 105.dp.toPx()),
             end = Offset(160.dp.toPx(), 120.dp.toPx()),
             strokeWidth = figureStroke,
@@ -699,7 +711,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Left leg
         drawLine(
-            color = Color(0xFF06B6D4),
+            color = Color(0xFF4facfe),
             start = Offset(140.dp.toPx(), 135.dp.toPx()),
             end = Offset(125.dp.toPx(), 155.dp.toPx()),
             strokeWidth = figureStroke,
@@ -707,7 +719,7 @@ fun DrawScope.drawModernHangman(wrongGuesses: Int) {
         )
         // Right leg
         drawLine(
-            color = Color(0xFF06B6D4),
+            color = Color(0xFF4facfe),
             start = Offset(140.dp.toPx(), 135.dp.toPx()),
             end = Offset(155.dp.toPx(), 155.dp.toPx()),
             strokeWidth = figureStroke,
