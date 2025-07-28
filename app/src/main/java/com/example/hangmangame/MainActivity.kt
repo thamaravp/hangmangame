@@ -25,6 +25,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -110,62 +111,86 @@ fun HangmanGame() {
         hintShown = true
     }
 
-    // Main UI
-    Column(
+    // Get screen configuration for safe area handling
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+
+    // Calculate safe top padding (accounting for notch/status bar)
+    val safeTopPadding = when {
+        screenHeight > 800.dp -> 48.dp // Phones with notch/punch hole
+        screenHeight > 700.dp -> 32.dp // Regular tall phones
+        else -> 24.dp // Compact phones
+    }
+
+    // Main UI with proper safe area handling
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF1E293B))
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Header
-        GameHeader()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding() // This handles system bars automatically
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 16.dp, // Additional top padding after status bar
+                    bottom = 16.dp
+                ),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Header with extra top spacing
+            Spacer(modifier = Modifier.height(8.dp))
+            GameHeader()
 
-        // Hangman Drawing
-        HangmanDrawingCard(wrongGuesses = wrongGuesses)
+            // Hangman Drawing
+            HangmanDrawingCard(wrongGuesses = wrongGuesses)
 
-        // Progress
-        GameProgressIndicator(
-            wrongGuesses = wrongGuesses,
-            maxWrongGuesses = maxWrongGuesses
-        )
-
-        // Word Display
-        WordDisplayCard(
-            currentWord = currentWord,
-            guessedLetters = guessedLetters
-        )
-
-        // Hint Section
-        HintSection(
-            hint = currentHint,
-            hintShown = hintShown,
-            onShowHint = { showHint() },
-            gameOver = gameOver
-        )
-
-        // Game Status
-        if (gameOver) {
-            GameStatusCard(
-                gameWon = gameWon,
-                currentWord = currentWord
+            // Progress
+            GameProgressIndicator(
+                wrongGuesses = wrongGuesses,
+                maxWrongGuesses = maxWrongGuesses
             )
+
+            // Word Display
+            WordDisplayCard(
+                currentWord = currentWord,
+                guessedLetters = guessedLetters
+            )
+
+            // Hint Section
+            HintSection(
+                hint = currentHint,
+                hintShown = hintShown,
+                onShowHint = { showHint() },
+                gameOver = gameOver
+            )
+
+            // Game Status
+            if (gameOver) {
+                GameStatusCard(
+                    gameWon = gameWon,
+                    currentWord = currentWord
+                )
+            }
+
+            // Alphabet Grid
+            AlphabetGrid(
+                guessedLetters = guessedLetters,
+                currentWord = currentWord,
+                gameOver = gameOver,
+                onLetterClick = { makeGuess(it) }
+            )
+
+            // New Game Button
+            NewGameButton(onClick = { resetGame() })
+
+            // Bottom safe area
+            Spacer(modifier = Modifier.height(16.dp))
         }
-
-        // Alphabet Grid
-        AlphabetGrid(
-            guessedLetters = guessedLetters,
-            currentWord = currentWord,
-            gameOver = gameOver,
-            onLetterClick = { makeGuess(it) }
-        )
-
-        // New Game Button
-        NewGameButton(onClick = { resetGame() })
-
-        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
